@@ -1,7 +1,5 @@
 package calculo.imposto.controller;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.json.Json;
@@ -13,7 +11,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import calculo.imposto.enums.Anexo;
+import calculo.imposto.dao.NotaFiscalDao;
 import calculo.imposto.model.Cliente;
 import calculo.imposto.model.NotaFiscal;
 import calculo.imposto.util.RestConstants;
@@ -49,20 +47,18 @@ public class NotaFiscalController implements RestConstants {
 	@Path(NOTA_FICAL_LISTAR_POR_CLIENTE)
 	public List<NotaFiscal> buscandoNotaFiscalCliente(@PathParam(ID) long id) {
 
-		List<NotaFiscal> imp = new ArrayList<NotaFiscal>();
+		List<NotaFiscal> notasFiscais = null;
 
-		System.out.println(id);
-		NotaFiscal notaFiscal = new NotaFiscal();
-		notaFiscal.setAnexo(Anexo.COMERCIO);
-		notaFiscal.setCliente(new Cliente());
-		notaFiscal.setDataEmissao(new Date());
-		notaFiscal.setDescricao("descricao");
-		notaFiscal.setNumeroNota(123l);
-		notaFiscal.setValor(1235.4);
+		try {
+			// buscando uma nota pelo cliente
+			notasFiscais = getDao().buscaPorCliente(id);
 
-		imp.add(notaFiscal);
+		} catch (Exception exception) {
+			System.err.println(exception.getMessage());
+			exception.printStackTrace();
+		}
 
-		return imp;
+		return notasFiscais;
 	}
 
 	/**
@@ -77,20 +73,18 @@ public class NotaFiscalController implements RestConstants {
 	@Path(NOTA_FICAL_LISTAR_POR_ANO_MES)
 	public List<NotaFiscal> buscandoNotaFiscalAnoMes(@PathParam(ANO_MES) String anoMes) {
 
-		List<NotaFiscal> imp = new ArrayList<NotaFiscal>();
+		List<NotaFiscal> notasFiscais = null;
 
-		System.out.println(anoMes);
-		NotaFiscal notaFiscal = new NotaFiscal();
-		notaFiscal.setAnexo(Anexo.COMERCIO);
-		notaFiscal.setCliente(new Cliente());
-		notaFiscal.setDataEmissao(new Date());
-		notaFiscal.setDescricao("descricao");
-		notaFiscal.setNumeroNota(123l);
-		notaFiscal.setValor(1235.4);
+		try {
+			// buscando uma nota pelo mes e ano de referencia
+			notasFiscais = getDao().buscaPorMesAnoReferencia(anoMes);
 
-		imp.add(notaFiscal);
+		} catch (Exception exception) {
+			System.err.println(exception.getMessage());
+			exception.printStackTrace();
+		}
 
-		return imp;
+		return notasFiscais;
 	}
 
 	/**
@@ -106,7 +100,27 @@ public class NotaFiscalController implements RestConstants {
 	@Path(NOTA_FICAL_SALVAR)
 	public String salvar(NotaFiscal notaFiscal) {
 
-		return "Salvo";
+		try {
+			// salvando uma nota fiscal
+			getDao().atualizar(notaFiscal);
+			return "Salvo com sucesso!";
+
+		} catch (Exception exception) {
+			System.err.println(exception.getMessage());
+			exception.printStackTrace();
+		}
+
+		return "Erro ao salvar";
+	}
+
+	/**
+	 * Instancia uma classe dao
+	 * 
+	 * @return {@link NotaFiscalDao}
+	 */
+	private NotaFiscalDao getDao() {
+		NotaFiscalDao dao = new NotaFiscalDao();
+		return dao;
 	}
 
 }

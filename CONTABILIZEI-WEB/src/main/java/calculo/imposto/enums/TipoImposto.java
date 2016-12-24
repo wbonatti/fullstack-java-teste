@@ -8,7 +8,7 @@ package calculo.imposto.enums;
  */
 public enum TipoImposto {
 
-	SIMPLES_NACIONAL(0), IMPOSTO_DE_RENDA(4.8), ISS(2), COFINS(3);
+	SIMPLES_NACIONAL(0), IMPOSTO_DE_RENDA(0.048), ISS(2), COFINS(0.03);
 
 	/**
 	 * value - double

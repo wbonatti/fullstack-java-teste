@@ -18,6 +18,7 @@ import calculo.imposto.enums.RegimeTributario;
 import calculo.imposto.enums.TipoImposto;
 import calculo.imposto.model.Cliente;
 import calculo.imposto.model.Imposto;
+import calculo.imposto.model.NotaFiscal;
 import calculo.imposto.util.RestConstants;
 
 /**
@@ -118,14 +119,18 @@ public class ImpostoController implements RestConstants {
 			Calendar data = Calendar.getInstance();
 
 			if (cliente.getRegimeTributario().equals(RegimeTributario.SIMPLES_NACIONAL)) {
-				Imposto imposto = new Imposto();
-				imposto.setCliente(cliente);
-				imposto.setMesAnoReferencia(data.get(Calendar.MONTH) + "/" + data.get(Calendar.YEAR));
-				imposto.setTipoImposto(TipoImposto.SIMPLES_NACIONAL);
-				imposto.setValor(cliente.getNotasFiscaisCalculoSimples());
-				imposto.setVencimento(data.getTime());
+				Imposto imposto = createSimpleImposto(cliente, data);
 				getDao().salva(imposto);
 
+			} else {
+				for (NotaFiscal nota : cliente.getNotasFiscais()) {
+					Imposto impostoConfins = createImposto(cliente, data, nota, TipoImposto.COFINS);
+					getDao().salva(impostoConfins);
+					Imposto impostoRenda = createImposto(cliente, data, nota, TipoImposto.IMPOSTO_DE_RENDA);
+					getDao().salva(impostoRenda);
+					Imposto impostoIss = createImposto(cliente, data, nota, TipoImposto.ISS);
+					getDao().salva(impostoIss);
+				}
 			}
 
 			return "Impostos calculados";
@@ -171,6 +176,46 @@ public class ImpostoController implements RestConstants {
 	private ImpostoDao getDao() {
 		ImpostoDao dao = new ImpostoDao();
 		return dao;
+	}
+
+	/**
+	 * Metodo que cria um imposto par ao simples nacional
+	 * 
+	 * @param cliente
+	 *            {@link Cliente}
+	 * @param data
+	 *            {@link Calendar}
+	 * @return {@link Imposto}
+	 */
+	private Imposto createSimpleImposto(Cliente cliente, Calendar data) {
+		Imposto imposto = new Imposto();
+		imposto.setCliente(cliente);
+		imposto.setMesAnoReferencia(data.get(Calendar.MONTH) + "/" + data.get(Calendar.YEAR));
+		imposto.setTipoImposto(TipoImposto.SIMPLES_NACIONAL);
+		imposto.setValor(cliente.getNotasFiscaisCalculoSimples());
+		imposto.setVencimento(data.getTime());
+		return imposto;
+	}
+
+	/**
+	 * Metodo que cria um imposto e retorna
+	 * 
+	 * @param cliente
+	 *            {@link Cliente}
+	 * @param data
+	 *            {@link Calendar}
+	 * @param nota
+	 *            {@link NotaFiscal}
+	 * @return {@link Imposto}
+	 */
+	private Imposto createImposto(Cliente cliente, Calendar data, NotaFiscal nota, TipoImposto tipoImposto) {
+		Imposto imposto = new Imposto();
+		imposto.setCliente(cliente);
+		imposto.setMesAnoReferencia(data.get(Calendar.MONTH) + "/" + data.get(Calendar.YEAR));
+		imposto.setTipoImposto(tipoImposto);
+		imposto.setValor(nota.getValor() * tipoImposto.getValue());
+		imposto.setVencimento(data.getTime());
+		return imposto;
 	}
 
 }

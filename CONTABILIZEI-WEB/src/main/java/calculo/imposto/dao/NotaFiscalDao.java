@@ -5,11 +5,12 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 
-import calculo.imposto.model.Cliente;
+import calculo.imposto.model.NotaFiscal;
 
 /**
- * Classe responsavel por fazer a conexão e persistir {@link Cliente}
+ * Classe responsavel por fazer a conexão e persistir {@link NotaFiscal}
  * 
  * @author wbonatti
  *
@@ -19,34 +20,34 @@ public class NotaFiscalDao {
 	/**
 	 * Cliente - cliente
 	 */
-	private final String CLIENTE = "cliente";
+	private final String NOTA_FISCAL = "notaFiscal";
 
 	/**
-	 * Salvar um {@link Cliente}
+	 * Salvar um {@link NotaFiscal}
 	 * 
-	 * @param cliente
-	 *            {@link Cliente}
+	 * @param nota
+	 *            {@link NotaFiscal}
 	 * 
-	 * @return cliente {@link Cliente}
+	 * @return nota {@link NotaFiscal}
 	 */
-	public Cliente salva(Cliente cliente) {
+	public NotaFiscal salva(NotaFiscal notaFiscal) {
 
 		EntityManager manager = createEntityManager();
 
 		try {
 			manager.getTransaction().begin();
-			manager.persist(cliente);
+			manager.persist(notaFiscal);
 			manager.getTransaction().commit();
 		} finally {
 			manager.close();
 		}
 
-		return cliente;
+		return notaFiscal;
 
 	}
 
 	/**
-	 * Remove um {@link Cliente}
+	 * Remove um {@link NotaFiscal}
 	 * 
 	 * @param id
 	 */
@@ -56,9 +57,9 @@ public class NotaFiscalDao {
 		try {
 
 			manager.getTransaction().begin();
-			Cliente cliente = manager.find(Cliente.class, id);
+			NotaFiscal notaFiscal = manager.find(NotaFiscal.class, id);
 
-			manager.remove(cliente);
+			manager.remove(notaFiscal);
 			manager.getTransaction().commit();
 
 		} finally {
@@ -68,73 +69,83 @@ public class NotaFiscalDao {
 	}
 
 	/**
-	 * Atualiza um {@link Cliente}
+	 * Atualiza um {@link NotaFiscal}
 	 * 
-	 * @param cliente
-	 *            {@link Cliente}
+	 * @param {@link
+	 * 			NotaFiscal}
 	 * 
-	 * @return cliente {@link Cliente}
+	 * @return {@link NotaFiscal}
 	 */
-	public Cliente atualizar(Cliente cliente) {
+	public NotaFiscal atualizar(NotaFiscal notaFiscal) {
 		EntityManager manager = createEntityManager();
 
 		try {
 			manager.getTransaction().begin();
-			manager.merge(cliente);
+			manager.merge(notaFiscal);
 			manager.getTransaction().commit();
 
 		} finally {
 			manager.close();
 		}
 
-		return cliente;
+		return notaFiscal;
 
 	}
 
 	/**
-	 * Buscando {@link Cliente} cadastrado
+	 * Buscando {@link NotaFiscal} cadastrado por ano mes de referencia
 	 * 
 	 * @param id
 	 * 
-	 * @return cliente {@link Cliente}
+	 * @return List off nota {@link NotaFiscal}
 	 */
-	public Cliente busca(long id) {
+	@SuppressWarnings("unchecked")
+	public List<NotaFiscal> buscaPorMesAnoReferencia(String anoMes) {
 		EntityManager manager = createEntityManager();
-		Cliente cliente = null;
+		List<NotaFiscal> notasFiscais = null;
 
 		try {
 			manager.getTransaction().begin();
-			cliente = manager.find(Cliente.class, id);
+
+			Query query = manager.createQuery("select nota from NotaFiscal nota where nota.mesAnoReferencia = :mesAno");
+			query.setParameter("mesAno", anoMes);
+
+			notasFiscais = query.getResultList();
+
 			manager.getTransaction().commit();
 
 		} finally {
 			manager.close();
 		}
 
-		return cliente;
+		return notasFiscais;
 
 	}
 
 	/**
-	 * Buscando {@link Cliente} cadastrados
+	 * Buscando {@link NotaFiscal} cadastrados por cliente
 	 * 
-	 * @return List off cliente {@link Cliente}
+	 * @return List off {@link NotaFiscal}
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Cliente> buscaTodos() {
+	public List<NotaFiscal> buscaPorCliente(long id) {
 		EntityManager manager = createEntityManager();
-		List<Cliente> clientes = null;
+		List<NotaFiscal> notasFiscais = null;
 
 		try {
 			manager.getTransaction().begin();
-			clientes = manager.createQuery("SELECT cli FROM Cliente cli").getResultList();
+
+			Query query = manager.createQuery("select nota from NotaFiscal nota where nota.cliente_id = :cliente");
+			query.setParameter("cliente", id);
+
+			notasFiscais = query.getResultList();
 			manager.getTransaction().commit();
 
 		} finally {
 			manager.close();
 		}
 
-		return clientes;
+		return notasFiscais;
 
 	}
 
@@ -147,7 +158,7 @@ public class NotaFiscalDao {
 		EntityManager manager = null;
 
 		try {
-			EntityManagerFactory factory = Persistence.createEntityManagerFactory(CLIENTE);
+			EntityManagerFactory factory = Persistence.createEntityManagerFactory(NOTA_FISCAL);
 			manager = factory.createEntityManager();
 
 		} catch (Exception exception) {

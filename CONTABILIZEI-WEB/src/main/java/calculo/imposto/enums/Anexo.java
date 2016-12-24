@@ -8,7 +8,7 @@ package calculo.imposto.enums;
  */
 public enum Anexo {
 
-	COMERCIO(1, 6), INDUSTRIA(2, 8.5), PRESTACAO_DE_SERVICOS(3, 11);
+	COMERCIO(1, 0.06), INDUSTRIA(2, 0.085), PRESTACAO_DE_SERVICOS(3, 0.11);
 
 	/**
 	 * id - int
