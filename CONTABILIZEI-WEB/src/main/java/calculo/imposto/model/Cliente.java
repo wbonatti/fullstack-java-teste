@@ -1,5 +1,6 @@
 package calculo.imposto.model;
 
+import java.util.Calendar;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -180,6 +181,16 @@ public class Cliente {
 		double valor = 0;
 
 		for (NotaFiscal nota : this.notasFiscais) {
+			Calendar dataNota = Calendar.getInstance();
+			dataNota.setTime(nota.getDataEmissao());
+
+			Calendar dataAtual = Calendar.getInstance();
+
+			if (dataAtual.get(Calendar.MONTH) != dataNota.get(Calendar.MONTH)
+					|| dataAtual.get(Calendar.YEAR) == dataNota.get(Calendar.YEAR)) {
+				continue;
+			}
+			
 			if (nota.getAnexo().equals(Anexo.COMERCIO)) {
 				valor += nota.getValor() * Anexo.COMERCIO.getValue();
 			}
