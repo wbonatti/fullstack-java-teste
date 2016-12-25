@@ -187,10 +187,10 @@ public class Cliente {
 			Calendar dataAtual = Calendar.getInstance();
 
 			if (dataAtual.get(Calendar.MONTH) != dataNota.get(Calendar.MONTH)
-					|| dataAtual.get(Calendar.YEAR) == dataNota.get(Calendar.YEAR)) {
+					|| dataAtual.get(Calendar.YEAR) != dataNota.get(Calendar.YEAR)) {
 				continue;
 			}
-			
+
 			if (nota.getAnexo().equals(Anexo.COMERCIO)) {
 				valor += nota.getValor() * Anexo.COMERCIO.getValue();
 			}
@@ -200,6 +200,32 @@ public class Cliente {
 			if (nota.getAnexo().equals(Anexo.PRESTACAO_DE_SERVICOS)) {
 				valor += nota.getValor() * Anexo.PRESTACAO_DE_SERVICOS.getValue();
 			}
+		}
+
+		return valor;
+	}
+
+	/**
+	 * Calcula o valor das notas fiscais pelo lucro presumido
+	 * 
+	 * @return Double
+	 * 
+	 */
+	public Double getNotasFiscaisCalculoLucroPresumido() {
+		double valor = 0;
+
+		for (NotaFiscal nota : this.notasFiscais) {
+			Calendar dataNota = Calendar.getInstance();
+			dataNota.setTime(nota.getDataEmissao());
+
+			Calendar dataAtual = Calendar.getInstance();
+
+			if (dataAtual.get(Calendar.MONTH) != dataNota.get(Calendar.MONTH)
+					|| dataAtual.get(Calendar.YEAR) != dataNota.get(Calendar.YEAR)) {
+				continue;
+			}
+
+			valor += nota.getValor();
 		}
 
 		return valor;

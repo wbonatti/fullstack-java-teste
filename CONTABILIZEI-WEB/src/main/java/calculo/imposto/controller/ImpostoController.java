@@ -116,21 +116,25 @@ public class ImpostoController implements RestConstants {
 				return "Sem notas para calcular";
 			}
 
+			// pega a data atual
 			Calendar data = Calendar.getInstance();
 
+			// verifica se o cliente é um cadastro simples ou um lucro presumido
 			if (cliente.getRegimeTributario().equals(RegimeTributario.SIMPLES_NACIONAL)) {
 				Imposto imposto = createSimpleImposto(cliente, data);
 				getDao().salva(imposto);
 
 			} else {
-				for (NotaFiscal nota : cliente.getNotasFiscais()) {
-					Imposto impostoConfins = createImposto(cliente, data, nota, TipoImposto.COFINS);
-					getDao().salva(impostoConfins);
-					Imposto impostoRenda = createImposto(cliente, data, nota, TipoImposto.IMPOSTO_DE_RENDA);
-					getDao().salva(impostoRenda);
-					Imposto impostoIss = createImposto(cliente, data, nota, TipoImposto.ISS);
-					getDao().salva(impostoIss);
-				}
+				// pega o valor total das notas
+				Double valor = cliente.getNotasFiscaisCalculoLucroPresumido();
+
+				// salva os impostos
+				Imposto impostoConfins = createImposto(cliente, data, valor, TipoImposto.COFINS);
+				getDao().salva(impostoConfins);
+				Imposto impostoRenda = createImposto(cliente, data, valor, TipoImposto.IMPOSTO_DE_RENDA);
+				getDao().salva(impostoRenda);
+				Imposto impostoIss = createImposto(cliente, data, valor, TipoImposto.ISS);
+				getDao().salva(impostoIss);
 			}
 
 			return "Impostos calculados";
@@ -204,16 +208,18 @@ public class ImpostoController implements RestConstants {
 	 *            {@link Cliente}
 	 * @param data
 	 *            {@link Calendar}
-	 * @param nota
-	 *            {@link NotaFiscal}
+	 * @param valor
+	 *            {@link Double}
+	 * 
 	 * @return {@link Imposto}
+	 * 
 	 */
-	private Imposto createImposto(Cliente cliente, Calendar data, NotaFiscal nota, TipoImposto tipoImposto) {
+	private Imposto createImposto(Cliente cliente, Calendar data, Double valor, TipoImposto tipoImposto) {
 		Imposto imposto = new Imposto();
 		imposto.setCliente(cliente);
 		imposto.setMesAnoReferencia(data.get(Calendar.MONTH) + "/" + data.get(Calendar.YEAR));
 		imposto.setTipoImposto(tipoImposto);
-		imposto.setValor(nota.getValor() * tipoImposto.getValue());
+		imposto.setValor(valor * tipoImposto.getValue());
 		imposto.setVencimento(data.getTime());
 		return imposto;
 	}
